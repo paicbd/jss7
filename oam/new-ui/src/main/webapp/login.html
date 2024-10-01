@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="icon" type="image/png" href="resources/public/favicon.png">
+
+    <style type="text/css">
+
+        .login_container{
+            overflow: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;"
+        }
+
+        .login_form{
+            width: 450px;
+            border-radius: 10px;
+            padding: 25px;
+            background-color: whitesmoke;
+        }
+
+        .my-3 {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        /*!*ui elemts*!*/
+
+        .el-button--primary {
+            color: #FFFFFF;
+            background-color: #8B222E;
+            border-color: #8B222E;
+        }
+
+        .el-input__inner:hover{
+            border-color:#8B222E !important;
+        }
+
+        .el-input__inner:focus{
+            border-color:#8B222E !important;
+        }
+    </style>
+
+    <script src="resources/public/vue.js"></script>
+
+    <link href="resources/public/element-ui.css" rel="stylesheet">
+</head>
+
+<div id="app" class="login_container">
+
+    <div class="login_form">
+        <div id="header_form" style="text-align: center; background: rgb(139, 34, 47); display: none;">
+            <img id="login_image" class="" alt="" width="155px" src="resources/public/Whitelabel-logo.png">
+        </div>
+
+        <el-form action="j_security_check" method=post>
+            <el-form-item prop="user" class="my-3" >
+                <el-input
+                        name="j_username"
+                        v-model="user"
+                        placeholder="user"
+                        clearable
+                        prefix-icon="el-icon-eleme"></el-input>
+            </el-form-item>
+            <el-form-item prop="password" class="my-3">
+                <el-input
+                        name="j_password"
+                        v-model="pass"
+                        type="password"
+                        placeholder="**********"
+                        clearable
+                        prefix-icon="el-icon-date"></el-input>
+            </el-form-item>
+
+            <div id="login_button_div" style="display: none;">
+                <el-button
+                    id="login_button"
+                    class="full-width"
+                    type="primary"
+                    native-type="submit"
+                    icon="el-icon-mouse">
+                Sign In</el-button>
+            </div>
+
+        </el-form>
+        <br/>
+        <div v-if="error">
+            <el-alert
+                    :title="error"
+                    type="error"
+                    show-icon>
+            </el-alert>
+        </div>
+    </div>
+</div>
+<script src="resources/public/element-ui.js"></script>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        data:{
+            user: '',
+            pass: '',
+            error: ''
+        },
+        created(){
+            var currentUrl = window.location.pathname;
+            var n = currentUrl.includes("j_security_check");
+            if(n){
+                console.log('error ...');
+                this.error = 'Wrong user name or password';
+            }
+        }
+    })
+</script>
+<script type="text/javascript">
+      function fetchWhitelabelparams() {
+        var currentUrl = window.location.href;
+        if (currentUrl.includes('killSession.jsp')) {
+            window.location.href = '/jss7-management-console';
+        }
+        var data = JSON.stringify([
+           {
+            "type": "read",
+            "mbean": "org.mobicents.smsc:layer=SmscPropertiesManagement,name=SmscManagement"
+           }
+        ]);
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                // Convert data string to an object
+                var jsonData = JSON.parse(this.responseText);
+                var headerFormNode = document.getElementById("header_form");
+                var loginButtonNode = document.getElementById("login_button");
+                if (jsonData[0].value.WhiteLabelColor) {
+                    headerFormNode.style.backgroundColor = jsonData[0].value.WhiteLabelColor;
+                    loginButtonNode.style.backgroundColor = jsonData[0].value.WhiteLabelColor;
+                    loginButtonNode.style.borderColor = jsonData[0].value.WhiteLabelColor;
+                }
+
+                if (jsonData[0].value.WhiteLabelFileBase64) {
+                    var imgNode = document.getElementById("login_image");
+                    imgNode.src = jsonData[0].value.WhiteLabelFileBase64;
+                }
+                headerFormNode.style.display = "block";
+                document.getElementById("login_button_div").style.display = "block";
+           }
+        });
+            var IPaddr = window.location.hostname;
+            var port =  window.location.port;
+            xhr.open("POST", "http://"+IPaddr+":"+port+"/jolokia/");
+            xhr.setRequestHeader("content-type", "application/json");
+            xhr.setRequestHeader("cache-control", "no-cache");
+            xhr.setRequestHeader("postman-token", "78d26ebd-0bad-0e57-40be-550a88c75ff7");
+            xhr.send(data);
+       }
+       window.onload = fetchWhitelabelparams;
+</script>
+</html>
